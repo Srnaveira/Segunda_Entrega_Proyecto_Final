@@ -1,0 +1,63 @@
+<div>
+    <h1 style="color: #333;">Formulario para visualizar Productos</h1>
+
+        <div style="display:grid; font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0;">
+            <form action="/api/products/" method="GET" style="background-color: #fff; padding: 5px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin: 15px;">
+                <div style="padding: 5px">
+                    <label for="limit">Límite:</label>
+                    <input type="number" id="limit" name="limit" min="1" max="100" value="10">
+                </div>
+                <div style="padding: 5px">
+                    <label for="query">Categoría:</label>
+                    <input type="checkbox" id="query" name="query" value="Ropa"> Ropa
+                    <input type="checkbox" id="query" name="query" value="Calzado"> Calzado
+                    <input type="checkbox"  id="query" name="query" value="Accesorios"> Accesorios
+                </div>
+                <div style="padding: 5px">
+                    <label for="sort">Ordenar por Precio:</label>
+                    <select id="sort" name="sort">
+                        <option value="asc">ascendente</option>
+                        <option value="dsc">descendente</option>
+                    </select>
+                </div>
+                <div style="padding: 5px">
+                    <label for="page">Página:</label>
+                    <input type="number" id="page" name="page" min="1" value="1">
+                </div>
+                <div style="padding: 5px">
+                    <button type="submit" style="padding: 10px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin: 15px">Buscar</button>
+                </div>
+            </form>
+
+
+
+            <div style="display: grid; background-color: #fff; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin: 10px;">
+                {{#each payload}}
+                <div style="display: grid; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);display:flex;align-items: center;">
+                    <p> <strong>Title: {{this.title}} &nbsp; 
+                        Description: {{this.description}} &nbsp;
+                        Price:  {{this.price}} &nbsp;
+                        Code: {{this.code}} &nbsp;
+                        Status: {{ this.status}} &nbsp;
+                        Category: {{this.category}} &nbsp;
+                        Stock: {{this.stock}} &nbsp; </strong>
+                    </p>
+                </div>
+             {{/each}}
+            <br />
+            <div>
+                {{#if hasPrevPage}}
+                <a href={{this.prevLink}}>
+                    << Anterior</a>
+                        {{/if}}
+                        &nbsp;
+                        {{this.page}}
+                        &nbsp;
+                        {{#if hasNextPage}}
+                        <a href={{this.nextLink}}>Siguiente >></a>
+                        {{/if}}
+            </div>
+
+        </div>
+
+</div>
