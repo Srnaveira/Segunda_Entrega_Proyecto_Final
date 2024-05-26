@@ -30,34 +30,42 @@
             </form>
 
 
-
-            <div style="display: grid; background-color: #fff; padding: 15px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin: 10px;">
-                {{#each payload}}
-                <div style="display: grid; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);display:flex;align-items: center;">
-                    <p> <strong>Title: {{this.title}} &nbsp; 
-                        Description: {{this.description}} &nbsp;
-                        Price:  {{this.price}} &nbsp;
-                        Code: {{this.code}} &nbsp;
-                        Status: {{ this.status}} &nbsp;
-                        Category: {{this.category}} &nbsp;
-                        Stock: {{this.stock}} &nbsp; </strong>
-                    </p>
+<div style="display:grid;grid-template-columns: repeat(4, 1fr);background-color: white">
+        {{#each payload}}
+        <div style="">
+            <div style="height: 300px; width:300px; background-color: #ffffffc9;">
+                <div style="padding: 5px">
+                    Code: {{this.code}}
                 </div>
-             {{/each}}
-            <br />
-            <div>
-                {{#if hasPrevPage}}
-                <a href={{this.prevLink}}>
-                    << Anterior</a>
-                        {{/if}}
-                        &nbsp;
-                        {{this.page}}
-                        &nbsp;
-                        {{#if hasNextPage}}
-                        <a href={{this.nextLink}}>Siguiente >></a>
-                        {{/if}}
+                <div style="display: grid; float: left; width: 300px; height: 300px; border: 2px solid #000000; background-color: #ffffffc9">
+                    <h4 style="color: black; margin-left: 30px">{{this.title}}</h4>
+                    <ul style="background-color: #fff">
+                        <li id="idProduct">ID: {{this._id}}</li>
+                        <li>Description: {{this.description}}</li>
+                        <li>Price: ${{this.price}}</li>
+                        <li>Category: {{this.category}}</li>
+                        <li>Status: {{this.status}}</li>
+                        <li>Stock: {{this.stock}}</li>
+                    </ul>
+                    <input type="submit" value="Agregar" id="button_add_{{this._id}}" style="padding: 10px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin: 15px">
+                </div>
             </div>
-
         </div>
-
+        {{/each}}
+    </div>
+    <div>
+        {{#if hasPrevPage}}
+        <a href={{this.prevLink}}>
+            << Anterior</a>
+                {{/if}}
+                &nbsp;
+                {{this.page}}
+                &nbsp;
+                {{#if hasNextPage}}
+                <a href={{this.nextLink}}>Siguiente >></a>
+                {{/if}}
+    </div>
 </div>
+
+<script src="/socket.io/socket.io.js"></script> 
+<script src="/js/products.js"></script>

@@ -5,12 +5,10 @@ import handlebars from 'express-handlebars';
 import { Server } from 'socket.io';
 import cartsRouter from './routes/carts.router.js';
 import productsRouter from './routes/products.router.js';
+import CartsManagment from './dao/carts.manager.js';
 import viewRoutes from './routes/view.routes.js';
 import ProductManager from './dao/products.manager.js';
-import  CartsManagment from './dao/carts.manager.js'
 import dotenv from 'dotenv';
-import productsModel from './models/products.model.js';
-
 const PORT = 8080;
 
 const app = express()
@@ -36,6 +34,8 @@ const httpServer = app.listen(PORT, () =>{
 })
 
 const pManager = new ProductManager();
+const cManager = new CartsManagment();
+
 
 mongoose.connect(process.env.MONGO_URL)
     .then(() =>{ console.log("Conexion sucefull")})
@@ -48,20 +48,20 @@ const socketServer = new Server(httpServer);
 socketServer.on('connection', socket =>{
     console.log("Nuevo cliente conectado");
 
-    socket.on('message', data =>{
-            console.log(data);
-    })
+        socket.on('message', data =>{
+                console.log(data);
+        })
     
-    pManager.loadProducts()
-    .then((products) =>{
-            socket.emit('listProducts', products)
-    })       
+        pManager.loadProducts()
+          .then((products) =>{
+                socket.emit('listProducts', products)
+        })       
     
-    socket.broadcast.emit('message_user_conect', "Ha Ingresado un nuevo USUARIO")
-    socketServer.emit('event_for_all', "Este evento lo veran todos los usuarios")
+        socket.broadcast.emit('message_user_conect', "Ha Ingresado un nuevo USUARIO")
+        socketServer.emit('event_for_all', "Este evento lo veran todos los usuarios")
 
     
-    socket.on('productAdd', async (product) =>{
+        socket.on('productAdd', async (product) =>{
             try {
                    const addIsValid = await pManager.addProduct(product)
                    if(addIsValid){
@@ -79,7 +79,7 @@ socketServer.on('connection', socket =>{
     
 
 
-    socket.on('productDelete',  async (pid) =>{
+        socket.on('productDelete',  async (pid) =>{
             try {
                     const Productexist = await pManager.getProductById(pid)
     
@@ -96,9 +96,25 @@ socketServer.on('connection', socket =>{
     
             }
 
+        })
 
-
-    })
+            
+        socket.on('add_Product_cart', async (productId) => {
+                try {
+                     const quantity = 1;   
+                     const listCarts = await cManager.loadCarts()        
+                     const randomCart = Math.floor(Math.random() * listCarts.length);
+                     const cartAdd = listCarts[randomCart]
+                     console.log(productId)
+                     console.log(randomCart)
+                     console.log(listCarts[randomCart])
+                     
+                     await cManager.addProductToCart(cartAdd, productId, quantity)
+                     socket.emit('productAdded', { message: "El producto se agrego correctamente" });
+                } catch (error) {
+                     socket.emit('productAdded', "Error al agregar el producto al cart selecionado: " + error.message)  
+                }
+        })
 
 })
 

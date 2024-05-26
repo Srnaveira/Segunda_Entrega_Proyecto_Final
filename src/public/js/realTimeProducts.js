@@ -19,13 +19,14 @@ btnAdd.addEventListener('click', () => {
         "stock": parseInt(document.getElementById('stock').value),
         "category": document.getElementById('category').value,
     };
-
+    console.log("producto add", product)
     socket.emit('productAdd', product);
 });
 
 
 btnDelete.addEventListener('click', () => {
     const pid = document.getElementById('idp').value;
+    console.log("Evento Delete....:", pid)
     socket.emit('productDelete', pid);
 })
 

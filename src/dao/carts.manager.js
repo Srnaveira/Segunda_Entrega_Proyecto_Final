@@ -34,17 +34,18 @@ class CartsManagment{
 
             if(productCheck){
                 //como existe un producto con ese id llama a la funcion para comporbar si ese producto ya esta ingresado en ese carrito
-                const product = await this.getCartContById( idCart, idProduct);
-                if(product){
-                    //como el producto ya existe en ese carro suma la cantidad
-                        await cartsModel.updateOne(
-                                { _id: idCart, "product.idP": idProduct },
-                                { $set: { "product.$.quantity": product.product[0].quantity + quantity } }
-                        );
-                    } else {
-                        // Agregar el producto al carrito si no existe
-                        await cartsModel.updateOne({ _id: idCart }, { $push: { product: { idP: idProduct, quantity: quantity } } });
-                    }
+                const existingCart = await cartsModel.findOne({ _id: idCart, "product.idP": idProduct });
+                console.log({existingCart})
+                if (existingCart) {
+                    // Actualizar la cantidad si el producto existe
+                    await cartsModel.updateOne(
+                        { _id: idCart, "product.idP": idProduct },
+                        { $set: { "product.$.quantity": existingCart.product[0].quantity + quantity } }
+                    );
+                } else {
+                    // Agregar el producto al carrito si no existe
+                    await cartsModel.updateOne({ _id: idCart }, { $push: { product: { idP: idProduct, quantity } } });
+                }
             } else {
                 console.log("El producto Ingresado no existe");
                 throw new Error({message: `El producto id ingresado: ${idProduct} no existe`})

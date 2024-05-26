@@ -2,6 +2,7 @@ import express from 'express';
 import { Router } from 'express'
 import CartsManagment from '../dao/carts.manager.js'
 import cartsModel from '../models/carts.model.js';
+import mongoose from 'mongoose';
 
 const router = express.Router()
 
@@ -32,9 +33,9 @@ router.get('/', async (req, res)=>{
 router.get('/:cid', async (req, res)=>{
     try {
         const cartId = req.params.cid;
-        const cartContent = await cManager.getCartProducts(cartId);
+        const cartContent = await cartsModel.findOne({_id: cartId}).populate('product.idP').lean();
         if(cartContent){
-            res.status(200).json({message: "Se encontro correctamente el contenido del carito", cart: cartContent});
+            res.status(200).render('cart', cartContent);
         } else {
             res.status(404).json({message: "No existe ese producto"});
         }
@@ -71,64 +72,47 @@ router.delete('/:cid/product/:pid', async (req, res)=>{
     }
 })
 
-router.put('/:cid', async (req, res) => {
-    try {
-        const cartId = req.params.cid;
-        const infoUpdate = req.body;
 
-        const cartCheck = await cManager.getCartProducts(cartId);
-
-        if(cartCheck){
-            await cartsModel.updateOne({_id: id}, infoUpdate)
-            res.status(200).json({message: "Carrito se actualizo correctamente"})
-        }
-        console.log(`El Cart ID: ${cartId} ingresado no existe`)
-        res.status(404).json({message: "No existe ese carrito"});
-    } catch (error) {
-        console.error("Se produjo algun error", error);
-        res.status(500).json({message: "Error interno del servidor", error: error});    
-
-
-    }
-
-})
-
-
-
-
-
-
-router.put('/:cid/product/:pid', async (req, res) =>{
+router.put('/:cid/product/:pid', async (req, res) => {
     try {
         const cartId = req.params.cid;
         const productId = req.params.pid;
-        const infoUpdate = req.body.quantity;
+        const infoUpdate = parseInt(req.body.quantity);
 
-        const cartCheck = await cartsModel.findOne({ _id: cartId});
-        if(cartCheck){
-            const productCheck = await cartsModel.findOne({ _id: cartId, "product.idP": productId});
-            if(productCheck){
-                await cartsModel.updateOne(                               
-                    { _id: cartId, "product.idP": productId },
-                    { $set: { "product.$.quantity": infoUpdate } }
-                );
-                res.status(200).json({message: "Producto del Carrito Actualizado correctamente"})
+        console.log(cartId);
+        console.log(productId);
+        console.log(infoUpdate);
+
+        const cartCheck = await cartsModel.findById(cartId);
+
+        console.log({ cartCheck });
+
+        if (cartCheck) {
+            const existingProduct = cartCheck.product.find(p => p.idP.toString() === productId);
+
+            console.log({ existingProduct });
+
+            if (existingProduct) {
+                // El producto ya existe en el carrito, actualiza la cantidad
+                existingProduct.quantity = infoUpdate;
+                await cartCheck.save();
+                console.log({ existingProduct });
+                res.status(200).json({ message: "Producto del Carrito Actualizado correctamente" });
             } else {
-                await cartsModel.updateOne({ _id: cartId }, { $push: { product: { idP: productId, infoUpdate } } });
-                res.status(200).json({message: "Producto se agrego correctamente"})
+                // Agregar el producto al carrito si no existe
+                cartCheck.product.push({ idP: new mongoose.Types.ObjectId(productId), quantity: infoUpdate });
+                await cartCheck.save();
+                res.status(200).json({ message: "Producto se agregó correctamente" });
             }
-        } else {       
-            console.log(`El Carrito ID: ${cartId} ingresado no existe`)
-            res.status(404).json({message: "No existe ese carritp"});
+        } else {
+            console.log(`El Carrito ID: ${cartId} ingresado no existe`);
+            res.status(404).json({ message: "No existe ese carrito" });
         }
     } catch (error) {
-        console.error("Se produjo algun error", error);
-        res.status(500).json({message: "Error interno del servidor", error: error}); 
-
-
+        console.error("Se produjo un error", error);
+        res.status(500).json({ message: "Error interno del servidor", error: error });
     }
-
-})
+});
 
 
 router.delete('/:cid', async (req, res) => {
